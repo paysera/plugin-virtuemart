@@ -1,0 +1,16 @@
+DIEGIMAS
+
+1. Nukopijuokite direktorijos turiny i joomla "tmp" direktorija.
+2. Eikite i  Extensions->Extension manager ir nuspauskite "Install" mygtuka 
+   "Install from directory" skiltyje;
+3. Eikite i  Components->VirtueMart->Shop->Payment Methods ir nuspauskite "New" 
+   mygtuka, esanti virsutiniame desiniame kampe;
+4. Iveskite siuos duomenos: Published: Yes, Payment Name: Jusu pasirinktas vardas, 
+   Payment Method: VM - Payment, Paysera, List Order: 0; ir spauskite "Save";
+5. Pasirinkite "Configuration" skilti ir uzpildykite reikiama informacija;
+
+Atsiradus problemoms rasykite i pagalba@mokejimai.lt
+
+ATNAUJINIMAI
+
+2012-01-26 Saugumo atnaujinimas;
