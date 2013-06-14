@@ -12,7 +12,7 @@ Requirements
 Installation
 ------------
 
-1. Download this repository as zip file, extract it to Joomla tmp directory
+1. Download this repository as zip file, extract everything from "plugin-virtuemart" folder it to Joomla tmp directory
 2. Go to Extensions->Extension manager and press "Install" button under
    "Install from directory";
 3. Go to Components->VirtueMart->Shop->Payment Methods and press "New" button,
