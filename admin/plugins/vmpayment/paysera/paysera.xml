@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension version="2.5" type="plugin" group="vmpayment" method="upgrade">
+    <name>VMPayment - Paysera</name>
+    <creationDate>December 11 2014</creationDate>
+    <author>Paysera Development Team</author>
+    <authorUrl>http://www.paysera.com</authorUrl>
+    <copyright>Copyright (C) 2014 Paysera.com . All rights reserved.</copyright>
+    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+    <version>1.0.2</version>
+    <description><![CDATA[<a href="http:/www.paysera.com" target="_blank">Paysera</a> is a popular
+	payment provider and available in many countries. ]]>
+    </description>
+
+    <files>
+        <filename plugin="paysera">paysera.php</filename>
+        <folder>language</folder>
+    </files>
+    <languages>
+        <language tag="en-GB">en-GB.plg_vmpayment_paysera.ini</language>
+    </languages>
+
+
+
+    <vmconfig>
+        <fields name="params">
+            <fieldset name="basic" addfieldpath="/administrator/components/com_virtuemart/fields">
+                <field type="spacer" default="VMPAYMENT_PAYSERA_PARAMS" level="level1"/>
+                <field type="vmtitle" default="VMPAYMENT_PAYSERA_PARAMS" level="level1"/>
+                <field type="hidden" name="module_name" default="paysera" />
+                <field name="paysera_project_id" type="text" size="30" default=""
+                       label="VMPAYMENT_PAYSERA_PROJECT_ID" description="VMPAYMENT_PAYSERA_PROJECT_ID_DESC"/>
+                <field name="paysera_project_pass" type="text" size="50" default="" label="VMPAYMENT_PAYSERA_PROJECT_PASS"
+                       description="VMPAYMENT_PAYSERA_PROJECT_PASS_DESC"/>
+
+                <field type="spacer" default="VMPAYMENT_PAYSERA_VIRTUEMART_fieldS" level="level1" />
+
+                <field name="status_pending" type="vmorderstate" scope="com_virtuemart" default="P" label="VMPAYMENT_PAYSERA_STATUS_PENDING" description="VMPAYMENT_PAYSERA_STATUS_PENDING_DESC" />
+                <field name="status_success" type="vmorderstate" scope="com_virtuemart" default="C" label="VMPAYMENT_PAYSERA_STATUS_SUCCESS" description="VMPAYMENT_PAYSERA_STATUS_SUCCESS_DESC" />
+                <field name="status_canceled" type="vmorderstate" scope="com_virtuemart" default="X" label="VMPAYMENT_PAYSERA_STATUS_FAILED" description="VMPAYMENT_PAYSERA_STATUS_FAILED_DESC" />
+
+                <field   type="spacer" default="VMPAYMENT_PAYSERA_SANDBOX_fieldS" level="level1" />
+
+                <field name="sandbox" type="radio" default="1" label="VMPAYMENT_PAYSERA_SANDBOX" description="VMPAYMENT_PAYSERA_SANDBOX_DESC" >
+                    <option value="0">COM_VIRTUEMART_NO</option>
+                    <option value="1">COM_VIRTUEMART_YES</option>
+                </field>
+
+                <field name="payment_tax_id" type="vmtaxes" scope="com_virtuemart"  label="VMPAYMENT_PAYSERA_TAX" description="VMPAYMENT_PAYSERA_TAX_DESC" />
+
+
+            </fieldset>
+        </fields>
+    </vmconfig>
+
+</extension>
+
