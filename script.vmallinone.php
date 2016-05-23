@@ -16,6 +16,7 @@ defined('_JEXEC') or die('Restricted access');
 if (!defined('_VM_SCRIPT_INCLUDED')) {
 
 	define('_VM_SCRIPT_INCLUDED', true);
+	if(!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
 
 
 	class com_virtuemart_allinoneInstallerScript {
@@ -48,6 +49,13 @@ if (!defined('_VM_SCRIPT_INCLUDED')) {
 			$src= $this->path .DS."languageBE" ;
 			$dst= JPATH_ADMINISTRATOR . DS . "language" ;
 			$this->recurse_copy( $src ,$dst );
+			// logo auto move
+			/*$src2= JPATH_ROOT .DS."tmp" .DS."plugin-virtuemart-master" .DS."admin" .DS."images" ;
+			$dst2= JPATH_ROOT . DS . "images"  . DS . "stories" . DS . "virtuemart" . DS . "payment";
+			$this->recurse_copy( $src2 ,$dst2 );*/
+
+
+
 			echo " Paysera language   moved to the joomla language BE folder   <br/ >" ;
 			echo "<H3>Installing Paysera Virtuemart Plugin Success.</h3>";
 			echo "<H3>You may directly uninstall this component. Your plugins will remain</h3>";

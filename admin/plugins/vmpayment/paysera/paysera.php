@@ -31,8 +31,11 @@ class plgVMPaymentPaysera extends vmPSPlugin {
 
         parent::__construct($subject, $config);
 
-        $this->_loggable   = true;
-        $this->tableFields = array_keys($this->getTableSQLFields());
+        $jlang = JFactory::getLanguage ();
+        $jlang->load ('plg_vmpayment_skrill', JPATH_ADMINISTRATOR, NULL, TRUE);
+        $this->_loggable = TRUE;
+        $this->_debug = TRUE;
+        $this->tableFields = array_keys ($this->getTableSQLFields ());
 
         //admin config fields
         $varsToPush = array(
@@ -57,10 +60,10 @@ class plgVMPaymentPaysera extends vmPSPlugin {
 
     function getTableSQLFields() {
         $SQLfields = array(
-            'id'                  => ' tinyint(1) unsigned NOT NULL AUTO_INCREMENT ',
-            'virtuemart_order_id' => ' int(11) UNSIGNED DEFAULT NULL',
+            'id'                  => ' int(11) unsigned NOT NULL AUTO_INCREMENT ',
+            'virtuemart_order_id' => 'int(1) UNSIGNED',
             'payment_name'        => 'varchar(5000)',
-            'payment_method_id'   => ' mediumint(1) UNSIGNED DEFAULT NULL',
+            'virtuemart_paymentmethod_id' => 'mediumint(1) UNSIGNED',
             'paysera_custom'      => ' varchar(255)  ',
         );
         return $SQLfields;
@@ -87,11 +90,21 @@ class plgVMPaymentPaysera extends vmPSPlugin {
         $currencyModel = new VirtueMartModelCurrency();
         $currency      = $currencyModel->getCurrency($order['details']['BT']->user_currency_id);
 
-        $orderID         = $order['details']['BT']->virtuemart_order_id;
+        $orderID         = $order['details']['BT']->order_number; //$order['details']['BT']->virtuemart_order_id;
+        $orderNumberID         = $order['details']['BT']->virtuemart_order_id;
         $paymentMethodID = $order['details']['BT']->virtuemart_paymentmethod_id;
 
         $lang     =& JFactory::getLanguage();
         $language = $lang->getLocale();
+
+        $countryCode = shopFunctions::getCountryByID ($order['details']['BT']->virtuemart_country_id, 'country_2_code');
+        //print_r($language[3]); die;
+
+        $lang = explode('_', $language[3]);
+        $lang = strtoupper($lang[0]);
+
+        $awayl_lang  = array('LIT', 'ENG', 'RUS', 'GER', 'POL', 'LAV', 'EST', 'POR', 'SPA', 'FRE', 'DUT', 'CHI', 'BUL', 'DAN');
+
 
         try {
             $request = WebToPay::buildRequest(array(
@@ -99,15 +112,16 @@ class plgVMPaymentPaysera extends vmPSPlugin {
                 'sign_password' => $method->paysera_project_pass,
 
                 'orderid'       => $orderID,
+                'vm_orderid'       => $orderNumberID,
                 'amount'        => intval(number_format($order['details']['BT']->order_total, 2, '', '')),
                 'currency'      => $currency->currency_code_3,
-                'lang'          => (in_array('en', $language)) ? 'ENG' : 'LTU',
+                'lang'          => (in_array($lang, $awayl_lang)) ? $lang : 'ENG',
 
                 'accepturl'     => JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=' . $paymentMethodID),
                 'cancelurl'     => JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=cart'),
                 'callbackurl'   => JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginnotification&tmpl=component&pm=' . $paymentMethodID),
                 'payment'       => '',
-                'country'       => 'LT',
+                'country'       => $countryCode,
 
                 'logo'          => '',
                 'p_firstname'   => $order['details']['BT']->first_name,
@@ -122,6 +136,9 @@ class plgVMPaymentPaysera extends vmPSPlugin {
         } catch (WebToPayException $e) {
             echo get_class($e) . ': ' . $e->getMessage();
         }
+
+
+
 
         $html = '<form action="' . WebToPay::getPaymentUrl(strtoupper($language[4])) . '" method="post" name="vm_paysera_form" >';
         foreach ($request as $name => $value) {
@@ -204,26 +221,8 @@ class plgVMPaymentPaysera extends vmPSPlugin {
 
         $method = $this->getVmPluginMethod($callbackData['pm']);
 
-        if ($callbackData[WebToPay::PREFIX . 'status'] != '1') {
-            exit('Status not accepted: ' . $callbackData[WebToPay::PREFIX . 'status']);
-        }
-
-        $orderID      = $callbackData[WebToPay::PREFIX . 'orderid'];
-        $Order        = new VirtueMartModelOrders();
-        $orderDetails = $Order->getOrder($orderID);
-
-        $currencyModel = new VirtueMartModelCurrency();
-        $currency      = $currencyModel->getCurrency($orderDetails['details']['BT']->user_currency_id);
-
-        if ($callbackData[WebToPay::PREFIX . 'amount'] != ($orderDetails['details']['BT']->order_total * 100)) {
-            exit('Bad amount: ' . $callbackData[WebToPay::PREFIX . 'amount']);
-        }
-        if ($callbackData[WebToPay::PREFIX . 'currency'] != $currency->currency_code_3) {
-            exit('Bad currency: ' . $callbackData[WebToPay::PREFIX . 'currency']);
-        }
-
         try {
-            WebToPay::toggleSS2(true);
+            // WebToPay::toggleSS2(true);
             $response = WebToPay::checkResponse($callbackData, array(
                 'projectid'     => $method->paysera_project_id,
                 'sign_password' => $method->paysera_project_pass,
@@ -232,13 +231,33 @@ class plgVMPaymentPaysera extends vmPSPlugin {
             exit(get_class($e) . ': ' . $e->getMessage());
         };
 
-        echo 'OK ';
+        if ($response['status'] != '1') {
+            exit('Status not accepted: ' . $response['status']);
+        }
+
+        $orderID      = $response['vm_orderid'];
+        $Order        = new VirtueMartModelOrders();
+        $orderDetails = $Order->getOrder($orderID);
+
+        $currencyModel = new VirtueMartModelCurrency();
+        $currency      = $currencyModel->getCurrency($orderDetails['details']['BT']->user_currency_id);
+
+        if ($response['amount'] != round($orderDetails['details']['BT']->order_total * 100)) {
+            exit('Bad amount: ' . $response['amount']);
+        }
+        if ($response['currency'] != $currency->currency_code_3) {
+            exit('Bad currency: ' . $response['currency']);
+        }
+
 
         $modelOrder                   = new VirtueMartModelOrders();
         $order['order_status']        = $method->status_success;
         $order['virtuemart_order_id'] = $orderID;
         $order['customer_notified']   = 1; //still not working
-        $order['comments']            = '';
+        $order['comments']            = 'Paysera';
+
+        echo 'OK ';
+        //echo $orderID. ' ' .$method->status_success;
         $modelOrder->updateStatusForOneOrder($orderID, $order, true);
         exit();
     }
@@ -316,6 +335,10 @@ class plgVMPaymentPaysera extends vmPSPlugin {
     return null;
     }
      */
+    function plgVmDeclarePluginParamsPaymentVM3( &$data) {
+        return $this->declarePluginParams('payment', $data);
+    }
+
 
 }
 
